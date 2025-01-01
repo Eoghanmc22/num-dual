@@ -2,7 +2,7 @@ use crate::DualNum;
 use nalgebra::allocator::Allocator;
 use nalgebra::constraint::{SameNumberOfRows, ShapeConstraint};
 use nalgebra::*;
-use num_traits::Zero;
+use num_traits::{Float, Zero};
 use std::fmt;
 use std::marker::PhantomData;
 use std::mem::MaybeUninit;
@@ -10,19 +10,19 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssi
 
 /// Wrapper struct for a derivative vector or matrix.
 #[derive(PartialEq, Eq, Clone, Debug)]
-pub struct Derivative<T: DualNum<F>, F, R: Dim, C: Dim>(
+pub struct Derivative<T: DualNum<F>, F: Float, R: Dim, C: Dim>(
     pub(crate) Option<OMatrix<T, R, C>>,
     PhantomData<F>,
 )
 where
     DefaultAllocator: Allocator<R, C>;
 
-impl<T: DualNum<F> + Copy, F: Copy, const R: usize, const C: usize> Copy
+impl<T: DualNum<F> + Copy, F: Float + Copy, const R: usize, const C: usize> Copy
     for Derivative<T, F, Const<R>, Const<C>>
 {
 }
 
-impl<T: DualNum<F>, F, R: Dim, C: Dim> Derivative<T, F, R, C>
+impl<T: DualNum<F>, F: Float, R: Dim, C: Dim> Derivative<T, F, R, C>
 where
     DefaultAllocator: Allocator<R, C>,
 {
@@ -38,7 +38,7 @@ where
         Self::new(None)
     }
 
-    pub(crate) fn map<T2, F2>(&self, f: impl FnMut(T) -> T2) -> Derivative<T2, F2, R, C>
+    pub(crate) fn map<T2, F2: Float>(&self, f: impl FnMut(T) -> T2) -> Derivative<T2, F2, R, C>
     where
         T2: DualNum<F2>,
         DefaultAllocator: Allocator<R, C>,
@@ -53,7 +53,7 @@ where
     //
     // To implement, we inline a copy of Matrix::map, which implicitly clones values, and remove
     // the cloning.
-    pub(crate) fn map_borrowed<T2, F2>(
+    pub(crate) fn map_borrowed<T2, F2: Float>(
         &self,
         mut f: impl FnMut(&T) -> T2,
     ) -> Derivative<T2, F2, R, C>
@@ -82,7 +82,7 @@ where
     }
 
     /// Same but bails out if the closure returns None
-    pub(crate) fn try_map_borrowed<T2, F2>(
+    pub(crate) fn try_map_borrowed<T2, F2: Float>(
         &self,
         mut f: impl FnMut(&T) -> Option<T2>,
     ) -> Option<Derivative<T2, F2, R, C>>
@@ -139,7 +139,7 @@ where
     }
 }
 
-impl<T: DualNum<F>, F> Derivative<T, F, U1, U1> {
+impl<T: DualNum<F>, F: Float> Derivative<T, F, U1, U1> {
     #[expect(clippy::self_named_constructors)]
     pub fn derivative() -> Self {
         Self::some(SVector::identity())
@@ -156,7 +156,7 @@ impl<T: DualNum<F>, F> Derivative<T, F, U1, U1> {
     }
 }
 
-impl<T: DualNum<F>, F, R: Dim, C: Dim> Mul<T> for Derivative<T, F, R, C>
+impl<T: DualNum<F>, F: Float, R: Dim, C: Dim> Mul<T> for Derivative<T, F, R, C>
 where
     DefaultAllocator: Allocator<R, C>,
 {
@@ -167,7 +167,7 @@ where
     }
 }
 
-impl<T: DualNum<F>, F, R: Dim, C: Dim> Mul<T> for &Derivative<T, F, R, C>
+impl<T: DualNum<F>, F: Float, R: Dim, C: Dim> Mul<T> for &Derivative<T, F, R, C>
 where
     DefaultAllocator: Allocator<R, C>,
 {
@@ -178,7 +178,7 @@ where
     }
 }
 
-impl<T: DualNum<F>, F, R: Dim, C: Dim, R2: Dim, C2: Dim> Mul<&Derivative<T, F, R2, C2>>
+impl<T: DualNum<F>, F: Float, R: Dim, C: Dim, R2: Dim, C2: Dim> Mul<&Derivative<T, F, R2, C2>>
     for &Derivative<T, F, R, C>
 where
     DefaultAllocator: Allocator<R, C> + Allocator<R2, C2> + Allocator<R, C2>,
@@ -191,7 +191,7 @@ where
     }
 }
 
-impl<T: DualNum<F>, F, R: Dim, C: Dim> Div<T> for Derivative<T, F, R, C>
+impl<T: DualNum<F>, F: Float, R: Dim, C: Dim> Div<T> for Derivative<T, F, R, C>
 where
     DefaultAllocator: Allocator<R, C>,
 {
@@ -202,7 +202,7 @@ where
     }
 }
 
-impl<T: DualNum<F>, F, R: Dim, C: Dim> Div<T> for &Derivative<T, F, R, C>
+impl<T: DualNum<F>, F: Float, R: Dim, C: Dim> Div<T> for &Derivative<T, F, R, C>
 where
     DefaultAllocator: Allocator<R, C>,
 {
@@ -213,7 +213,7 @@ where
     }
 }
 
-impl<T: DualNum<F>, F, R: Dim, C: Dim> Derivative<T, F, R, C>
+impl<T: DualNum<F>, F: Float, R: Dim, C: Dim> Derivative<T, F, R, C>
 where
     DefaultAllocator: Allocator<R, C>,
 {
@@ -234,7 +234,7 @@ where
     }
 }
 
-impl<T: DualNum<F>, F, R: Dim, C: Dim> Add for Derivative<T, F, R, C>
+impl<T: DualNum<F>, F: Float, R: Dim, C: Dim> Add for Derivative<T, F, R, C>
 where
     DefaultAllocator: Allocator<R, C>,
 {
@@ -250,7 +250,8 @@ where
     }
 }
 
-impl<T: DualNum<F>, F, R: Dim, C: Dim> Add<&Derivative<T, F, R, C>> for Derivative<T, F, R, C>
+impl<T: DualNum<F>, F: Float, R: Dim, C: Dim> Add<&Derivative<T, F, R, C>>
+    for Derivative<T, F, R, C>
 where
     DefaultAllocator: Allocator<R, C>,
 {
@@ -266,7 +267,7 @@ where
     }
 }
 
-impl<T: DualNum<F>, F, R: Dim, C: Dim> Add for &Derivative<T, F, R, C>
+impl<T: DualNum<F>, F: Float, R: Dim, C: Dim> Add for &Derivative<T, F, R, C>
 where
     DefaultAllocator: Allocator<R, C>,
 {
@@ -282,7 +283,7 @@ where
     }
 }
 
-impl<T: DualNum<F>, F, R: Dim, C: Dim> Sub for Derivative<T, F, R, C>
+impl<T: DualNum<F>, F: Float, R: Dim, C: Dim> Sub for Derivative<T, F, R, C>
 where
     DefaultAllocator: Allocator<R, C>,
 {
@@ -298,7 +299,8 @@ where
     }
 }
 
-impl<T: DualNum<F>, F, R: Dim, C: Dim> Sub<&Derivative<T, F, R, C>> for Derivative<T, F, R, C>
+impl<T: DualNum<F>, F: Float, R: Dim, C: Dim> Sub<&Derivative<T, F, R, C>>
+    for Derivative<T, F, R, C>
 where
     DefaultAllocator: Allocator<R, C>,
 {
@@ -314,7 +316,7 @@ where
     }
 }
 
-impl<T: DualNum<F>, F, R: Dim, C: Dim> Sub for &Derivative<T, F, R, C>
+impl<T: DualNum<F>, F: Float, R: Dim, C: Dim> Sub for &Derivative<T, F, R, C>
 where
     DefaultAllocator: Allocator<R, C>,
 {
@@ -330,7 +332,7 @@ where
     }
 }
 
-impl<T: DualNum<F>, F, R: Dim, C: Dim> Neg for &Derivative<T, F, R, C>
+impl<T: DualNum<F>, F: Float, R: Dim, C: Dim> Neg for &Derivative<T, F, R, C>
 where
     DefaultAllocator: Allocator<R, C>,
 {
@@ -341,7 +343,7 @@ where
     }
 }
 
-impl<T: DualNum<F>, F, R: Dim, C: Dim> Neg for Derivative<T, F, R, C>
+impl<T: DualNum<F>, F: Float, R: Dim, C: Dim> Neg for Derivative<T, F, R, C>
 where
     DefaultAllocator: Allocator<R, C>,
 {
@@ -352,7 +354,7 @@ where
     }
 }
 
-impl<T: DualNum<F>, F, R: Dim, C: Dim> AddAssign for Derivative<T, F, R, C>
+impl<T: DualNum<F>, F: Float, R: Dim, C: Dim> AddAssign for Derivative<T, F, R, C>
 where
     DefaultAllocator: Allocator<R, C>,
 {
@@ -365,7 +367,7 @@ where
     }
 }
 
-impl<T: DualNum<F>, F, R: Dim, C: Dim> SubAssign for Derivative<T, F, R, C>
+impl<T: DualNum<F>, F: Float, R: Dim, C: Dim> SubAssign for Derivative<T, F, R, C>
 where
     DefaultAllocator: Allocator<R, C>,
 {
@@ -378,7 +380,7 @@ where
     }
 }
 
-impl<T: DualNum<F>, F, R: Dim, C: Dim> MulAssign<T> for Derivative<T, F, R, C>
+impl<T: DualNum<F>, F: Float, R: Dim, C: Dim> MulAssign<T> for Derivative<T, F, R, C>
 where
     DefaultAllocator: Allocator<R, C>,
 {
@@ -389,7 +391,7 @@ where
     }
 }
 
-impl<T: DualNum<F>, F, R: Dim, C: Dim> DivAssign<T> for Derivative<T, F, R, C>
+impl<T: DualNum<F>, F: Float, R: Dim, C: Dim> DivAssign<T> for Derivative<T, F, R, C>
 where
     DefaultAllocator: Allocator<R, C>,
 {
@@ -404,7 +406,7 @@ impl<T, R: Dim, C: Dim> nalgebra::SimdValue for Derivative<T, T::Element, R, C>
 where
     DefaultAllocator: Allocator<R, C>,
     T: DualNum<T::Element> + SimdValue + Scalar,
-    T::Element: DualNum<T::Element> + Scalar + Zero,
+    T::Element: DualNum<T::Element> + Scalar + Zero + Float,
 {
     type Element = Derivative<T::Element, T::Element, R, C>;
 
@@ -529,7 +531,7 @@ where
 
 use simba::scalar::{SubsetOf, SupersetOf};
 
-impl<TSuper, FSuper, T, F, R: Dim, C: Dim> SubsetOf<Derivative<TSuper, FSuper, R, C>>
+impl<TSuper, FSuper: Float, T, F: Float, R: Dim, C: Dim> SubsetOf<Derivative<TSuper, FSuper, R, C>>
     for Derivative<T, F, R, C>
 where
     TSuper: DualNum<FSuper> + SupersetOf<T>,

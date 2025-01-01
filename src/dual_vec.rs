@@ -1,3 +1,4 @@
+use crate::coerce_zero::CoerceZeroExt;
 use crate::{Derivative, DualNum, DualNumFloat};
 use approx::{AbsDiffEq, RelativeEq, UlpsEq};
 use nalgebra::allocator::Allocator;
@@ -13,7 +14,7 @@ use std::ops::{
 
 /// A vector dual number for the calculations of gradients or Jacobians.
 #[derive(Clone, Debug)]
-pub struct DualVec<T: DualNum<F>, F, D: Dim>
+pub struct DualVec<T: DualNum<F>, F: Float, D: Dim>
 where
     DefaultAllocator: Allocator<D>,
 {
@@ -24,7 +25,7 @@ where
     f: PhantomData<F>,
 }
 
-impl<T: DualNum<F> + Copy, F: Copy, const N: usize> Copy for DualVec<T, F, Const<N>> {}
+impl<T: DualNum<F> + Copy, F: Float + Copy, const N: usize> Copy for DualVec<T, F, Const<N>> {}
 
 pub type DualVec32<D> = DualVec<f32, f32, D>;
 pub type DualVec64<D> = DualVec<f64, f64, D>;
@@ -33,22 +34,24 @@ pub type DualSVec64<const N: usize> = DualVec<f64, f64, Const<N>>;
 pub type DualDVec32 = DualVec<f32, f32, Dyn>;
 pub type DualDVec64 = DualVec<f64, f64, Dyn>;
 
-impl<T: DualNum<F>, F, D: Dim> DualVec<T, F, D>
+impl<T: DualNum<F>, F: Float, D: Dim> DualVec<T, F, D>
 where
     DefaultAllocator: Allocator<D>,
 {
     /// Create a new dual number from its fields.
     #[inline]
     pub fn new(re: T, eps: Derivative<T, F, D, U1>) -> Self {
+        let epsilon = F::epsilon().to_f64().unwrap() * 5.0;
+
         Self {
-            re,
-            eps,
+            re: re.coerce_zero(T::from_f64(epsilon).unwrap()),
+            eps: eps.map(|it| it.coerce_zero(T::from_f64(epsilon).unwrap())),
             f: PhantomData,
         }
     }
 }
 
-impl<T: DualNum<F> + Zero, F, D: Dim> DualVec<T, F, D>
+impl<T: DualNum<F> + Zero, F: Float, D: Dim> DualVec<T, F, D>
 where
     DefaultAllocator: Allocator<D>,
 {
@@ -213,7 +216,7 @@ where
 }
 
 /* string conversions */
-impl<T: DualNum<F>, F, D: Dim> fmt::Display for DualVec<T, F, D>
+impl<T: DualNum<F>, F: Float, D: Dim> fmt::Display for DualVec<T, F, D>
 where
     DefaultAllocator: Allocator<D>,
 {
@@ -248,7 +251,7 @@ impl<T, D: Dim> nalgebra::SimdValue for DualVec<T, T::Element, D>
 where
     DefaultAllocator: Allocator<D>,
     T: DualNum<T::Element> + SimdValue + Scalar,
-    T::Element: DualNum<T::Element> + Scalar,
+    T::Element: DualNum<T::Element> + Scalar + Float,
 {
     // Say T = simba::f32x4. T::Element is f32. T::SimdBool is AutoSimd<[bool; 4]>.
     // AutoSimd<[f32; 4]> stores an actual [f32; 4], i.e. four floats in one slot.
@@ -402,7 +405,8 @@ where
 
 use simba::scalar::{SubsetOf, SupersetOf};
 
-impl<TSuper, FSuper, T, F, D: Dim> SubsetOf<DualVec<TSuper, FSuper, D>> for DualVec<T, F, D>
+impl<TSuper, FSuper: Float, T, F: Float, D: Dim> SubsetOf<DualVec<TSuper, FSuper, D>>
+    for DualVec<T, F, D>
 where
     TSuper: DualNum<FSuper> + SupersetOf<T>,
     T: DualNum<F>,
@@ -439,7 +443,7 @@ where
     }
 }
 
-impl<TSuper, FSuper, D: Dim> SupersetOf<f32> for DualVec<TSuper, FSuper, D>
+impl<TSuper, FSuper: Float, D: Dim> SupersetOf<f32> for DualVec<TSuper, FSuper, D>
 where
     TSuper: DualNum<FSuper> + SupersetOf<f32>,
     DefaultAllocator: Allocator<D> + Allocator<U1, D> + Allocator<D, U1> + Allocator<D, D>,
@@ -463,7 +467,7 @@ where
     }
 }
 
-impl<TSuper, FSuper, D: Dim> SupersetOf<f64> for DualVec<TSuper, FSuper, D>
+impl<TSuper, FSuper: Float, D: Dim> SupersetOf<f64> for DualVec<TSuper, FSuper, D>
 where
     TSuper: DualNum<FSuper> + SupersetOf<f64>,
     DefaultAllocator: Allocator<D> + Allocator<U1, D> + Allocator<D, U1> + Allocator<D, D>,

@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! impl_from_f {
     ($struct:ident, [$($im:ident),*]$(, [$($dim:tt),*]$(, [$($ddim:tt),*])?)?) => {
-        impl<T: DualNum<F>, F$($(, $dim: Dim)*)?> From<F> for $struct<T, F$($(, $dim)*)?>
+        impl<T: DualNum<F>, F: Float$($(, $dim: Dim)*)?> From<F> for $struct<T, F$($(, $dim)*)?>
         where
             $($(DefaultAllocator: Allocator<$dim> + Allocator<U1, $dim> + Allocator<$dim, $dim>,)*)?
             $($(DefaultAllocator: Allocator<$($ddim,)*>)?)?
@@ -80,7 +80,7 @@ macro_rules! impl_add_sub_rem {
             }
         }
 
-        impl<'a, 'b, T: DualNum<F>, F$($(, $dim: Dim)*)?> Rem<&'a $struct<T, F$($(, $dim)*)?>> for &'b $struct<T, F$($(, $dim)*)?>
+        impl<'a, 'b, T: DualNum<F>, F: Float$($(, $dim: Dim)*)?> Rem<&'a $struct<T, F$($(, $dim)*)?>> for &'b $struct<T, F$($(, $dim)*)?>
         where
             $($(DefaultAllocator: Allocator<$dim> + Allocator<U1, $dim> + Allocator<$dim, $dim>,)*)?
             $($(DefaultAllocator: Allocator<$($ddim,)*>)?)?
@@ -189,7 +189,7 @@ macro_rules! impl_assign_ops {
             }
         }
 
-        impl<T: DualNum<F>, F$($(, $dim: Dim)*)?> AddAssign for $struct<T, F$($(, $dim)*)?>
+        impl<T: DualNum<F>, F: Float$($(, $dim: Dim)*)?> AddAssign for $struct<T, F$($(, $dim)*)?>
         where
             $($(DefaultAllocator: Allocator<$dim> + Allocator<U1, $dim> + Allocator<$dim, $dim>,)*)?
             $($(DefaultAllocator: Allocator<$($ddim,)*>)?)?
@@ -201,7 +201,7 @@ macro_rules! impl_assign_ops {
             }
         }
 
-        impl<T: DualNum<F>, F$($(, $dim: Dim)*)?> SubAssign for $struct<T, F$($(, $dim)*)?>
+        impl<T: DualNum<F>, F: Float$($(, $dim: Dim)*)?> SubAssign for $struct<T, F$($(, $dim)*)?>
         where
             $($(DefaultAllocator: Allocator<$dim> + Allocator<U1, $dim> + Allocator<$dim, $dim>,)*)?
             $($(DefaultAllocator: Allocator<$($ddim,)*>)?)?
@@ -213,7 +213,7 @@ macro_rules! impl_assign_ops {
             }
         }
 
-        impl<T: DualNum<F>, F$($(, $dim: Dim)*)?> RemAssign for $struct<T, F$($(, $dim)*)?>
+        impl<T: DualNum<F>, F: Float$($(, $dim: Dim)*)?> RemAssign for $struct<T, F$($(, $dim)*)?>
         where
             $($(DefaultAllocator: Allocator<$dim> + Allocator<U1, $dim> + Allocator<$dim, $dim>,)*)?
             $($(DefaultAllocator: Allocator<$($ddim,)*>)?)?
@@ -279,7 +279,7 @@ macro_rules! impl_scalar_op {
             }
         }
 
-        impl<T: DualNum<F>, F$($(, $dim: Dim)*)?> Add<F> for $struct<T, F$($(, $dim)*)?>
+        impl<T: DualNum<F>, F: Float$($(, $dim: Dim)*)?> Add<F> for $struct<T, F$($(, $dim)*)?>
         where
             $($(DefaultAllocator: Allocator<$dim> + Allocator<U1, $dim> + Allocator<$dim, $dim>,)*)?
             $($(DefaultAllocator: Allocator<$($ddim,)*>)?)?
@@ -292,7 +292,7 @@ macro_rules! impl_scalar_op {
             }
         }
 
-        impl<T: DualNum<F>, F$($(, $dim: Dim)*)?> AddAssign<F> for $struct<T, F$($(, $dim)*)?>
+        impl<T: DualNum<F>, F: Float$($(, $dim: Dim)*)?> AddAssign<F> for $struct<T, F$($(, $dim)*)?>
         where
             $($(DefaultAllocator: Allocator<$dim> + Allocator<U1, $dim> + Allocator<$dim, $dim>,)*)?
             $($(DefaultAllocator: Allocator<$($ddim,)*>)?)?
@@ -303,7 +303,7 @@ macro_rules! impl_scalar_op {
             }
         }
 
-        impl<T: DualNum<F>, F$($(, $dim: Dim)*)?> Sub<F> for $struct<T, F$($(, $dim)*)?>
+        impl<T: DualNum<F>, F: Float$($(, $dim: Dim)*)?> Sub<F> for $struct<T, F$($(, $dim)*)?>
         where
             $($(DefaultAllocator: Allocator<$dim> + Allocator<U1, $dim> + Allocator<$dim, $dim>,)*)?
             $($(DefaultAllocator: Allocator<$($ddim,)*>)?)?
@@ -316,7 +316,7 @@ macro_rules! impl_scalar_op {
             }
         }
 
-        impl<T: DualNum<F>, F$($(, $dim: Dim)*)?> SubAssign<F> for $struct<T, F$($(, $dim)*)?>
+        impl<T: DualNum<F>, F: Float$($(, $dim: Dim)*)?> SubAssign<F> for $struct<T, F$($(, $dim)*)?>
         where
             $($(DefaultAllocator: Allocator<$dim> + Allocator<U1, $dim> + Allocator<$dim, $dim>,)*)?
             $($(DefaultAllocator: Allocator<$($ddim,)*>)?)?
@@ -327,7 +327,7 @@ macro_rules! impl_scalar_op {
             }
         }
 
-        impl<T: DualNum<F>, F$($(, $dim: Dim)*)?> Rem<F> for $struct<T, F$($(, $dim)*)?>
+        impl<T: DualNum<F>, F: Float$($(, $dim: Dim)*)?> Rem<F> for $struct<T, F$($(, $dim)*)?>
         where
             $($(DefaultAllocator: Allocator<$dim> + Allocator<U1, $dim> + Allocator<$dim, $dim>,)*)?
             $($(DefaultAllocator: Allocator<$($ddim,)*>)?)?
@@ -339,7 +339,7 @@ macro_rules! impl_scalar_op {
             }
         }
 
-        impl<T: DualNum<F>, F$($(, $dim: Dim)*)?> RemAssign<F> for $struct<T, F$($(, $dim)*)?>
+        impl<T: DualNum<F>, F: Float$($(, $dim: Dim)*)?> RemAssign<F> for $struct<T, F$($(, $dim)*)?>
         where
             $($(DefaultAllocator: Allocator<$dim> + Allocator<U1, $dim> + Allocator<$dim, $dim>,)*)?
             $($(DefaultAllocator: Allocator<$($ddim,)*>)?)?
