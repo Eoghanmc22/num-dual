@@ -72,10 +72,11 @@ pub use derivative::Derivative;
 //     Dual2Vec64,
 // };
 // pub use dual3::{third_derivative, try_third_derivative, Dual3, Dual3_32, Dual3_64};
-pub use dual_vec::{
-    gradient, jacobian, try_gradient, try_jacobian, DualDVec32, DualDVec64, DualSVec32, DualSVec64,
-    DualVec, DualVec32, DualVec64,
-};
+// pub use dual_vec::{
+//     gradient, jacobian, try_gradient, try_jacobian, DualDVec32, DualDVec64, DualSVec32, DualSVec64,
+//     DualVec, DualVec32, DualVec64,
+// };
+pub use dual_vec::{gradient, try_gradient, DualVec};
 // pub use hyperdual::{
 //     second_partial_derivative, try_second_partial_derivative, HyperDual, HyperDual32, HyperDual64,
 // };

@@ -1,10 +1,9 @@
 #[macro_export]
 macro_rules! impl_derivatives {
-    ($deriv:ident, $nderiv:expr, $struct:ident, [$($im:ident),*]$(, [$($dim:tt),*]$(, [$($ddim:tt),*])?)?) => {
+    ($deriv:ident, $nderiv:expr, $struct:ident, [$($im:ident),*]$(, [$($dim:tt),*])?) => {
         impl<T: DualNum<F>, F: DualNumFloat$($(, $dim: Dim)*)?> DualNum<F> for $struct<T, F$($(, $dim)*)?>
         where
-        $($(DefaultAllocator: Allocator<$dim> + Allocator<U1, $dim> + Allocator<$dim, $dim>,)*)?
-        $($(DefaultAllocator: Allocator<$($ddim,)*>)?)?
+        $(DefaultAllocator: Allocator<$($dim,)*>)?
         {
             const NDERIV: usize = T::NDERIV + $nderiv;
 
